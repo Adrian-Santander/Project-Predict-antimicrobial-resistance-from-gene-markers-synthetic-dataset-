@@ -1,0 +1,45 @@
+# Project: Predict Antimicrobial Resistance from Gene Markers
+# Libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import classification_report, confusion_matrix
+
+# Step 1: Create synthetic dataset
+np.random.seed(42)
+n_samples = 200
+
+# Gene markers (binary: 0 = absent, 1 = present)
+genes = ['geneA', 'geneB', 'geneC', 'geneD', 'geneE']
+X = pd.DataFrame(np.random.randint(0, 2, size=(n_samples, len(genes))), columns=genes)
+
+# Target: antimicrobial resistance (0 = sensitive, 1 = resistant)
+# Simple logic: resistance more likely if geneA or geneC is present
+y = (X['geneA'] + X['geneC'] + np.random.binomial(1, 0.1, n_samples)) > 0
+y = y.astype(int)
+
+# Step 2: Split dataset
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+# Step 3: Train a Random Forest model
+model = RandomForestClassifier(n_estimators=100, random_state=42)
+model.fit(X_train, y_train)
+
+# Step 4: Predictions and evaluation
+y_pred = model.predict(X_test)
+
+print("Confusion Matrix:")
+print(confusion_matrix(y_test, y_pred))
+print("\nClassification Report:")
+print(classification_report(y_test, y_pred))
+
+# Step 5: Feature importance visualization
+feat_importances = pd.Series(model.feature_importances_, index=genes)
+plt.figure(figsize=(8,5))
+sns.barplot(x=feat_importances.index, y=feat_importances.values)
+plt.title("Feature Importance: Genes Predicting Antimicrobial Resistance")
+plt.ylabel("Importance")
+plt.show()
